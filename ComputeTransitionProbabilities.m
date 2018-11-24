@@ -43,5 +43,16 @@ function P = ComputeTransitionProbabilities( stateSpace, controlSpace, map, gate
 %           from state i to state j if control input l is applied.
 
 % put your code here
+K = size(stateSpace,1);
+L = size(controlSpace,1);
+P = zeros(K,K,L);
+for i = 1:K
+    for j = 1:K
+        for l = 1:L
+            % to compute
+            P(i,j,l) = 0.0;
+        end
+    end
+end
 
 end

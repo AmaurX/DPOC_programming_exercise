@@ -32,7 +32,7 @@ shouldGenerateMap = false;
 mapSize = [ 20, 40 ]; % [N, M]
 
 % set the following to true to test the correponding implementation
-transitionProbabilitiesImplemented = false;
+transitionProbabilitiesImplemented = true;
 stageCostsImplemented = false;
 
 % set the following to true to test the correponding implementation
@@ -89,8 +89,7 @@ if transitionProbabilitiesImplemented
     % The transition probability matrix has the dimension (K x K x L), i.e.
     % the entry P(i, j, l) representes the transition probability from state i
     % to state j if control input l is applied.
-    P = ComputeTransitionProbabilities( stateSpace, controlSpace, ...
-        map, gate, mansion, cameras );
+    P = ComputeTransitionProbabilities( stateSpace, controlSpace, map, gate, mansion, cameras );
 end
 
 %% compute stage costs
