@@ -38,6 +38,9 @@ err = 1e-100;
 
 J = zeros(K, K, L); % indx 1:2 - state(x, y), indx 3 - input u 
 
-p_ij = P(i, j, u)
+    g_iu = G(i, u);
 
+    p_ij = P(i, j, u);
+    
+    J_k = J_kplus1;
 end
