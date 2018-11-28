@@ -31,4 +31,13 @@ function [ J_opt, u_opt_ind ] = ValueIteration( P, G )
 
 % put your code here
 
+% Notes:
+% J_k+1 (i) min_(u in U(i)) {g(i, u) + sum_(j=1)^n p_ij (u) J_k (i)}
+
+err = 1e-100;
+
+J = zeros(K, K, L); % indx 1:2 - state(x, y), indx 3 - input u 
+
+p_ij = P(i, j, u)
+
 end
