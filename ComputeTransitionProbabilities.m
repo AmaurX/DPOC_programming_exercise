@@ -50,6 +50,8 @@ pc=0.001;
 M = size(map,1);
 N = size(map,2);
 H = size(cameras,1);
+F = size(mansion, 1);
+%% Computing a matrix which gives at each spot the probability of being seen by a camera
 map_camera_prob = zeros(M,N);
 for i = 1:H
     C = cameras(i,1:3);
@@ -104,8 +106,60 @@ for i = 1:H
     end 
 end
 
-            
+%% Computing a matrix that gives at each spot the probability of successfully taking a picture
+map_pic_prob = zeros(M,N);
+for i = 1:M
+    for j = 1:N
+        if(map(i,j)<= 0.0)
+            map_pic_prob(i,j) = pc;
+        end
+    end
+end
+z = 0.5;
+for i = 1:F
+    C = mansion(i,1:2);
+    y = C(1);
+    x = C(2);
+    
+    for m = x+1:M
+        if(map(m,y)>0.0)
+            break;
+        else
+            prob = max(pc, z/(m-x));
+            map_pic_prob(m,y) = max(map_pic_prob(m,y), prob);
+        end
+    end
+    for m = 1:x-1
+        invert_m = x - m;
+        if(map(invert_m,y)>0.0)
+            break;
+        else
+            prob = max(pc, z/(x-invert_m));
 
+            map_pic_prob(invert_m,y) = max(map_pic_prob(invert_m,y), prob);
+        end
+    end    
+    for n = y+1:N
+        if(map(x,n)>0.0)
+            break;
+        else
+            prob = max(pc, z/(n-y));
+
+            map_pic_prob(x,n) = max(map_pic_prob(x,n), prob);
+        end
+    end
+    for n = 1:y-1
+        invert_n = y - n;
+        if(map(x,invert_n)>0.0)
+            break;
+        else
+            prob = max(pc, z/(y-invert_n));
+            map_pic_prob(x,invert_n) = max(map_pic_prob(x,invert_n), prob);
+        end
+    end 
+end
+
+%% computing the transitionprobmatrix
 for i = 1:K
     for j = 1:K
         for l = 1:L
