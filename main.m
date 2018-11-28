@@ -17,8 +17,8 @@ close all;
 clc;
 load exampleMap.mat
 load examplePG.mat
-real_P = P
-
+real_P = P;
+real_G = G;
 %% define global problem parameters
 % These variables may be used in your implementations. Do not add any
 % additional global variable here for your implementations!
@@ -36,7 +36,7 @@ mapSize = [ 20, 40 ]; % [N, M]
 
 % set the following to true to test the correponding implementation
 transitionProbabilitiesImplemented = true;
-stageCostsImplemented = false;
+stageCostsImplemented = true;
 
 % set the following to true to test the correponding implementation
 valueIterationImplemented = false; 
@@ -108,6 +108,7 @@ if stageCostsImplemented
     G = ComputeStageCosts( stateSpace, controlSpace, ...
         map, gate, mansion, cameras );
 end
+disp(all(isequal(G, real_G)))
 
 %% solve stochastic shortest path problem
 % Here we solve the stochastic shortest path problem by Value Iteration,
