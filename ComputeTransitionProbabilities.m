@@ -46,10 +46,72 @@ function P = ComputeTransitionProbabilities( stateSpace, controlSpace, map, gate
 K = size(stateSpace,1);
 L = size(controlSpace,1);
 P = zeros(K,K,L);
+pc=0.001;
+M = size(map,1);
+N = size(map,2);
+H = size(cameras,1);
+map_camera_prob = zeros(M,N);
+for i = 1:H
+    C = cameras(i,1:3);
+    y = C(1);
+    x = C(2);
+    z = C(3);
+    for m = x+1:M
+        if(map(m,y)>0.0)
+            break;
+        else
+            prob = z/(m-x);
+            if(map(m,y)<0.0)
+                prob = 1 - (1 - prob)^4;
+            end
+            map_camera_prob(m,y) = 1 - (1 - map_camera_prob(m,y))*(1 - prob);
+        end
+    end
+    for m = 1:x-1
+        invert_m = x - m;
+        if(map(invert_m,y)>0.0)
+            break;
+        else
+            prob = z/(x-invert_m);
+            if(map(invert_m,y)<0.0)
+                prob = 1 - (1 - prob)^4;
+            end
+            map_camera_prob(invert_m,y) = 1 - (1 - map_camera_prob(invert_m,y))*(1 - prob);
+        end
+    end    
+    for n = y+1:N
+        if(map(x,n)>0.0)
+            break;
+        else
+            prob = z/(n-y);
+            if(map(x,n)<0.0)
+                prob = 1 - (1 - prob)^4;
+            end
+            map_camera_prob(x,n) = 1 - (1 - map_camera_prob(x,n))*(1 - prob);
+        end
+    end
+    for n = 1:y-1
+        invert_n = y - n;
+        if(map(x,invert_n)>0.0)
+            break;
+        else
+            prob = z/(y-invert_n);
+            if(map(x,invert_n)<0.0)
+                prob = 1 - (1 - prob)^4;
+            end
+            map_camera_prob(x,invert_n) = 1 - (1 - map_camera_prob(x,invert_n))*(1 - prob);
+        end
+    end 
+end
+
+            
+
 for i = 1:K
     for j = 1:K
         for l = 1:L
             % to compute
+            %[x,y] = stateSpace(i);
+            %[x_dest, y_dest] = stateSpace(j);
             P(i,j,l) = 0.0;
         end
     end
