@@ -15,6 +15,9 @@
 clear all;
 close all;
 clc;
+load exampleMap.mat
+load examplePG.mat
+real_P = P
 
 %% define global problem parameters
 % These variables may be used in your implementations. Do not add any
@@ -91,6 +94,8 @@ if transitionProbabilitiesImplemented
     % to state j if control input l is applied.
     P = ComputeTransitionProbabilities( stateSpace, controlSpace, map, gate, mansion, cameras );
 end
+
+disp(all(isequal(P, real_P)))
 
 %% compute stage costs
 if stageCostsImplemented 

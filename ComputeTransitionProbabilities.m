@@ -47,16 +47,25 @@ K = size(stateSpace,1);
 L = size(controlSpace,1);
 P = zeros(K,K,L);
 pc=0.001;
+
+%for some reason, map is transverse, so I untransverse it.
+map = map';
+
+
 M = size(map,1);
 N = size(map,2);
+
 H = size(cameras,1);
 F = size(mansion, 1);
+x_gate = gate(1);
+y_gate = gate(2);
+
 %% Computing a matrix which gives at each spot the probability of being seen by a camera
 map_camera_prob = zeros(M,N);
 for i = 1:H
     C = cameras(i,1:3);
-    y = C(1);
-    x = C(2);
+    x = C(1);
+    y = C(2);
     z = C(3);
     for m = x+1:M
         if(map(m,y)>0.0)
@@ -106,6 +115,8 @@ for i = 1:H
     end 
 end
 
+map_camera_prob
+
 %% Computing a matrix that gives at each spot the probability of successfully taking a picture
 map_pic_prob = zeros(M,N);
 for i = 1:M
@@ -118,8 +129,8 @@ end
 z = 0.5;
 for i = 1:F
     C = mansion(i,1:2);
-    y = C(1);
-    x = C(2);
+    x = C(1);
+    y = C(2);
     
     for m = x+1:M
         if(map(m,y)>0.0)
@@ -164,9 +175,65 @@ for i = 1:K
     for j = 1:K
         for l = 1:L
             % to compute
-            %[x,y] = stateSpace(i);
-            %[x_dest, y_dest] = stateSpace(j);
-            P(i,j,l) = 0.0;
+            S = stateSpace(i,:);
+            x = S(1);
+            y = S(2);
+            
+            S_dest = stateSpace(j,:);
+            x_dest = S_dest(1);
+            y_dest = S_dest(2);
+            
+            control = controlSpace(l); 
+            if(control== 'p')
+                if(x_dest == x && x == x_gate && y_dest == y && y == y_gate)
+                    P(i,j,l) = 1 - map_pic_prob(x,y);
+                elseif(x_dest == x_gate && y_dest == y_gate)
+                    P(i,j,l) = (1 - map_pic_prob(x,y)) * map_camera_prob(x,y);
+                elseif(x_dest==x && y_dest==y)
+                    P(i,j,l) = (1 - map_pic_prob(x,y)) * (1 - map_camera_prob(x,y));
+                end
+            elseif(control == 'e')
+                if(x < M && map(x+1, y) <= 0.0)
+                    if(x_dest == x +1 && x +1 == x_gate && y_dest == y && y == y_gate)
+                        P(i,j,l) = 1;
+                    elseif(x_dest == x+1 && y_dest == y)
+                        P(i,j,l) = 1 - map_camera_prob(x+1,y);
+                    elseif(x_dest == x_gate && y_dest == y_gate)
+                        P(i,j,l) = map_camera_prob(x+1,y);
+                    end
+                end
+            elseif(control == 'w')
+                if(x > 1 && map(x-1, y) <= 0.0)
+                    if(x_dest == x -1 && x -1 == x_gate && y_dest == y && y == y_gate)
+                        P(i,j,l) = 1;
+                    elseif(x_dest == x-1 && y_dest == y)
+                        P(i,j,l) = 1 - map_camera_prob(x-1,y);
+                    elseif(x_dest == x_gate && y_dest == y_gate)
+                    P(i,j,l) = map_camera_prob(x-1,y);
+                    end
+                end
+            elseif(control == 'n')
+                if(y<N && map(x, y+1) <= 0.0)
+                    if(x_dest == x && x == x_gate && y_dest == y+1 && y+1 == y_gate)
+                        P(i,j,l) = 1;
+                    elseif(x_dest == x && y_dest == y+1)
+                        P(i,j,l) = 1 - map_camera_prob(x,y+1);
+                    elseif(x_dest == x_gate && y_dest == y_gate)
+                        P(i,j,l) = map_camera_prob(x,y+1);
+                    end
+                end
+            else
+                
+                if(y>1 && map(x, y-1) <= 0.0)
+                    if(x_dest == x && x == x_gate && y_dest == y-1 && y-1 == y_gate)
+                        P(i,j,l) = 1;
+                    elseif(x_dest == x && y_dest == y-1)
+                        P(i,j,l) = 1 - map_camera_prob(x,y-1);
+                    elseif(x_dest == x_gate && y_dest == y_gate)
+                        P(i,j,l) = map_camera_prob(x,y-1);
+                    end
+                end
+            end
         end
     end
 end
