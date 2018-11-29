@@ -48,7 +48,7 @@ U_optimal = ones(K,1);
 % state_label_mat = reshape(state_label_mat,[K,K])';
 % state_label_mat = triu(state_label_mat) + triu(state_label_mat)' - eye(K,K);
 %%
-cost_sum = 0;
+
 cost_to_go_candidates = zeros(1,length(P(1,1,:)));
 input_candidates = zeros(1,length(P(1,1,:)));
 iter_vec = zeros(K,1);
@@ -70,7 +70,7 @@ for current_state_row = 1:K
                     input_candidates(u) = u;
                 end
             J_kplus1(i) = min(cost_to_go_candidates);
-            U_optimal(i) = find(cost_to_go_candidates == J_kplus1(i),1,'first');
+            U_optimal(i) = find(cost_to_go_candidates == J_kplus1(i),1,'last');
             test = (abs(J_k(i) - J_kplus1(i)) <= epsilon);
             J_k = J_kplus1;
         end                
@@ -78,6 +78,6 @@ end
     
     J_opt = J_k;
     u_opt_ind = U_optimal;
-    disp(iter_vec)
+%     disp(iter_vec)
     
 end
