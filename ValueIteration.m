@@ -34,9 +34,9 @@ function [ J_opt, u_opt_ind ] = ValueIteration( P, G )
 % Notes:
 % J_k+1 (i) min_(u in U(i)) {g(i, u) + sum_(j=1)^n p_ij (u) J_k (i)}
 
-err = 1e-100;
+epsilon = 1e-100;
 K = length(G(:,1));
-J_kplus1 = ones(K, 1);
+J_kplus1 = zeros(K, 1);
 J_k = zeros(K, 1);
 U_optimal = zeros(K,1);
 
@@ -51,33 +51,35 @@ U_optimal = zeros(K,1);
 cost_sum = 0;
 cost_to_go_candidates = zeros(1,length(P(1,1,:)));
 input_candidates = zeros(1,length(P(1,1,:)));
-test = 0;
+iter_vec = zeros(K,1);
 
-while test == 0               
-    for current_state_row = 1:K
-        i = current_state_row;
-            for state_prob_row = 1:K
-                i_ = state_prob_row;
-                    for u = 1:length(P(1,1,:))
-                        g_iu = G(i, u);
-                            for state_prob_col = 1:K
-                                j_ = state_prob_col;
-                                p_ij_u = P(i_, j_, u);
-                                cost_sum = cost_sum + p_ij_u*J_k(j_);
-                            end
-                        cost_to_go_candidates(u) = g_iu + cost_sum;
-                        input_candidates(u) = u;
-                    end
-                J_kplus1(i_) = min(cost_to_go_candidates);
-                U_optimal(i_) = min(find(cost_to_go_candidates == min(cost_to_go_candidates)));
-            end       
-    end
-test = (abs(J_k(i_) - J_kplus1(i_)) >= err);                   
-J_k = J_kplus1;
+for current_state_row = 1:K
+    test = 0;
+    iter = 0;
+        while test == 0
+            iter_vec(current_state_row) = iter + 1;
+            i = current_state_row;
+                for u = 1:length(P(1,1,:))
+                    g_iu = G(i, u);
+                        for state_prob_col = 1:K
+                            j = state_prob_col;
+                            p_ij_u = P(i, j, u);
+                            cost_sum = cost_sum + p_ij_u*J_k(j);
+                        end
+                    cost_to_go_candidates(u) = g_iu + cost_sum;
+                    cost_sum = 0;
+                    input_candidates(u) = u;
+                end
+            J_kplus1(i) = min(cost_to_go_candidates);
+            U_optimal(i) = find(cost_to_go_candidates == J_kplus1(i),1,'last');
+            test = (abs(J_k(i) - J_kplus1(i)) <= epsilon);
+%             disp(abs(J_k(i) - J_kplus1(i)))
+            J_k = J_kplus1;
+        end                
 end
-    
     
     J_opt = J_k;
     u_opt_ind = U_optimal;
+    disp(iter_vec)
     
 end
