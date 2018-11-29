@@ -36,9 +36,9 @@ function [ J_opt, u_opt_ind ] = ValueIteration( P, G )
 
 epsilon = 1e-100;
 K = length(G(:,1));
-J_kplus1 = zeros(K, 1);
-J_k = zeros(K, 1);
-U_optimal = zeros(K,1);
+J_kplus1 = ones(K, 1);
+J_k = ones(K, 1);
+U_optimal = ones(K,1);
 
 %%
 % state_label_mat = zeros(1,K^2);
@@ -55,9 +55,8 @@ iter_vec = zeros(K,1);
 
 for current_state_row = 1:K
     test = 0;
-    iter = 0;
         while test == 0
-            iter_vec(current_state_row) = iter + 1;
+            iter_vec(current_state_row) = iter_vec(current_state_row) + 1;
             i = current_state_row;
                 for u = 1:length(P(1,1,:))
                     g_iu = G(i, u);
@@ -71,9 +70,8 @@ for current_state_row = 1:K
                     input_candidates(u) = u;
                 end
             J_kplus1(i) = min(cost_to_go_candidates);
-            U_optimal(i) = find(cost_to_go_candidates == J_kplus1(i),1,'last');
+            U_optimal(i) = find(cost_to_go_candidates == J_kplus1(i),1,'first');
             test = (abs(J_k(i) - J_kplus1(i)) <= epsilon);
-%             disp(abs(J_k(i) - J_kplus1(i)))
             J_k = J_kplus1;
         end                
 end
