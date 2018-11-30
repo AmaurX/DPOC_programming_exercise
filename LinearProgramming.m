@@ -51,10 +51,10 @@ A = zeros(K*U,K);
 A_ones = zeros(K*U,K);
 
 idx = 0;
-for state_num = 1:K
+for current_state_row = 1:K
     for input_num = 1:U
         idx = idx+1;
-        A_ones(idx,state_num) = 1;
+        A_ones(idx,current_state_row) = 1;
     end
 end
 
@@ -70,7 +70,7 @@ for current_state_row = 1:K
                     
                     if g_iu == Inf % Because the linprog solver throws an
                                    % error if the stage cost is = Inf
-                        g_iu = 10^8;
+                        g_iu = 10^20;
                     end
                     b(idx) = g_iu;
                     A(idx,j) = -p_ij_u;
@@ -83,13 +83,20 @@ f = -ones(1,K);
 x = linprog(f,A,b);
 
 idx = 0;
-for state_num = 1:K
-    for input_num = 1:U
-        idx = idx+1;
-        if A(idx,state_num) == x(state_num)
-            U_optimal(state_num) = input_num;
+for current_state_row = 1:K
+    i = current_state_row;
+        for u = 1:U
+            idx = idx+1;
+            g_iu = G(i,u);
+            if g_iu == Inf % Because the linprog solver throws an
+                           % error if the stage cost is = Inf
+                g_iu = 10^20;
+            end
+            if abs(x(i) - (P(i, 1:end, u)*x + g_iu)) < 10^-5
+                U_optimal(i) = u;
+            end
+%             disp([abs(x(i) - (P(i, 1:end, u)*x + g_iu)) < 10^-5, x(i), P(i, 1:end, u)*x + g_iu, u, U_optimal(i)])
         end
-    end
 end
 
 J_opt = x;

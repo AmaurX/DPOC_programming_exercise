@@ -33,7 +33,7 @@ function [ J_opt, u_opt_ind ] = ValueIteration( P, G )
 
 % Notes:
 % J_k+1 (i) min_(u in U(i)) {g(i, u) + sum_(j=1)^n p_ij (u) J_k (i)}
-
+tic
 epsilon = 1e-5;
 K = length(G(:,1));
 J_kplus1 = ones(K, 1);
@@ -65,5 +65,5 @@ end
     
     J_opt = J_k;
     u_opt_ind = U_optimal;
-    
+toc
 end
