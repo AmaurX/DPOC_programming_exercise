@@ -31,5 +31,7 @@ function [ J_opt, u_opt_ind ] = LinearProgramming( P, G )
 
 % put your code here
 
+% Note: we can use linprog to solve the linear programming problem
+
 end
 
