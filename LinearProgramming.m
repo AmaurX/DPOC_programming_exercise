@@ -33,5 +33,67 @@ function [ J_opt, u_opt_ind ] = LinearProgramming( P, G )
 
 % Note: we can use linprog to solve the linear programming problem
 
+K = length(G(:,1));
+U_optimal = ones(K,1);
+% cost_to_go_candidates = zeros(length(P(1,1,:)),1);
+
+% x = V
+% f^T = -ones(1,K)
+% A
+% b = q(i,u) + cost_sum <- Note: This will be (5*K) x 1 because there are
+% five inputs for each possible state and this five inequality constraaints
+% for each state.
+% x = linprog(f,A,b)
+
+U = length(P(1,1,:)); % Number of inputs
+b = zeros(K*U,1);
+A = zeros(K*U,K);
+A_ones = zeros(K*U,K);
+
+idx = 0;
+for state_num = 1:K
+    for input_num = 1:U
+        idx = idx+1;
+        A_ones(idx,state_num) = 1;
+    end
+end
+
+idx = 0;
+for current_state_row = 1:K
+    i = current_state_row;
+        for u = 1:U
+            idx = idx + 1;
+            g_iu = G(i, u);
+                for state_prob_col = 1:K
+                    j = state_prob_col;
+                    p_ij_u = P(i, j, u);
+                    
+                    if g_iu == Inf % Because the linprog solver throws an
+                                   % error if the stage cost is = Inf
+                        g_iu = 10^8;
+                    end
+                    b(idx) = g_iu;
+                    A(idx,j) = -p_ij_u;
+                end
+        end
+end
+A = A_ones + A;
+f = -ones(1,K);
+
+x = linprog(f,A,b);
+
+idx = 0;
+for state_num = 1:K
+    for input_num = 1:U
+        idx = idx+1;
+        if A(idx,state_num) == x(state_num)
+            U_optimal(state_num) = input_num;
+        end
+    end
+end
+
+J_opt = x;
+u_opt_ind = U_optimal;
+
 end
 
