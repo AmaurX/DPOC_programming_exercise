@@ -32,52 +32,54 @@ function [ J_opt, u_opt_ind ] = PolicyIteration( P, G )
 % put your code here
 
 K = size(P,1);
-err = 1e-10;
+err = 1e-5;
 
 %% Policy Iteration
 
 % Initialize with random proper policy
-policy = ones(1,K); % Go up for all states
+curr_policy = 5*ones(K,1); % Go up for all states
+next_policy = 5*ones(K,1);
 
-J_i = sym('j', [1 K]);
-eqn = []; 
-J_curr = zeros(1,K);
-J_prev = zeros(1,K);
+J_curr = zeros(K,1);
+J_candidate = zeros(size(G));
+
+P_mat = zeros(K,K);
+G_vec = zeros(K,1);
 
 while true
     % Policy Evaluation 
-    cost = 0;
     for curr_state = 1:K % for every state i
         for next_state = 1:K % for every state j
-           cost =+ P(curr_state, next_state, policy(curr_state))*J_i(next_state);
+            P_mat(curr_state,next_state) = P(curr_state,next_state,curr_policy(curr_state));
+            G_vec(curr_state) = G(curr_state,curr_policy(curr_state));
         end
-        eqn = [eqn, G(curr_state, policy(curr_state)) + cost == J_i(curr_state)];
     end
-    soln = struct2cell(solve(eqn, J_i));
-    J_curr = double([soln{:}]);        
-        
+    J_curr = (eye(K) - P_mat)\G_vec;
+
     % Policy Improvement
-    new_cost = 0;
-    net_cost = zeros(1,5);
-    for curr_state = 1:K % for every state i
-        for u = 1:5
-            for next_state = 1:K % for every state j                
-                new_cost =+ P(curr_state, next_state, u)*J_curr(next_state);
-            end
-            net_cost(u) = G(curr_state, u) + new_cost;
+    for u = 1:5
+        for curr_state = 1:K % for every state i
+                for next_state = 1:K % for every state j                
+                    P_mat(curr_state,next_state) = P(curr_state,next_state,u);
+                    G_vec(curr_state) = G(curr_state,u);
+                end
         end
-        [~, policy(curr_state)] = min(net_cost);
-    end    
-    if all(abs(J_curr - J_prev) <= err)        
+            J_candidate(:,u) = G_vec + P_mat*J_curr;
+    end
+    
+    for curr_state = 1:K
+        [~, next_policy(curr_state)] = min(J_candidate(curr_state,:));
+    end
+    
+    if all(abs(next_policy - curr_policy) <= err)        
         break;
     end
-    J_prev = J_curr;
-    J_curr = zeros(1,K);
-    eqn = [];
+    
+    curr_policy = next_policy;
 end
 
 J_opt = J_curr;
-u_opt_ind = policy;
+u_opt_ind = curr_policy;
 
 end
 
