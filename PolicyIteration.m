@@ -31,5 +31,53 @@ function [ J_opt, u_opt_ind ] = PolicyIteration( P, G )
 
 % put your code here
 
+K = size(P,1);
+err = 1e-10;
+
+%% Policy Iteration
+
+% Initialize with random proper policy
+policy = ones(1,K); % Go up for all states
+
+J_i = sym('j', [1 K]);
+eqn = []; 
+J_curr = zeros(1,K);
+J_prev = zeros(1,K);
+
+while true
+    % Policy Evaluation 
+    cost = 0;
+    for curr_state = 1:K % for every state i
+        for next_state = 1:K % for every state j
+           cost =+ P(curr_state, next_state, policy(curr_state))*J_i(next_state);
+        end
+        eqn = [eqn, G(curr_state, policy(curr_state)) + cost == J_i(curr_state)];
+    end
+    soln = struct2cell(solve(eqn, J_i));
+    J_curr = double([soln{:}]);        
+        
+    % Policy Improvement
+    new_cost = 0;
+    net_cost = zeros(1,5);
+    for curr_state = 1:K % for every state i
+        for u = 1:5
+            for next_state = 1:K % for every state j                
+                new_cost =+ P(curr_state, next_state, u)*J_curr(next_state);
+            end
+            net_cost(u) = G(curr_state, u) + new_cost;
+        end
+        [~, policy(curr_state)] = min(net_cost);
+    end    
+    if all(abs(J_curr - J_prev) <= err)        
+        break;
+    end
+    J_prev = J_curr;
+    J_curr = zeros(1,K);
+    eqn = [];
+end
+
+J_opt = J_curr;
+u_opt_ind = policy;
+
 end
 
