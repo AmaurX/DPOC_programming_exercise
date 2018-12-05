@@ -85,7 +85,7 @@ x = linprog(f,A,b);
 idx = 0;
 for current_state_row = 1:K
     i = current_state_row;
-        for u = 1:U
+        for u = U:-1:1
             idx = idx+1;
             g_iu = G(i,u);
             if g_iu == Inf % Because the linprog solver throws an
